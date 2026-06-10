@@ -1,0 +1,238 @@
+<html ng-app="RutasApp">
+
+<head>
+    <meta charset="UTF-8">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="estilos/estilos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+    <script src="js/app.js"></script>
+
+    <!-- Modelos -->
+    <script src="js/modelos/ciudad.js"></script>
+    <script src="js/modelos/ruta.js"></script>
+    <script src="js/modelos/parada.js"></script>
+    <script src="js/modelos/tipo.js"></script>
+
+    <!-- Servicios -->
+    <script src="js/servicios/ciudad.servicio.js"></script>
+    <script src="js/servicios/ruta.servicio.js"></script>
+    <script src="js/servicios/parada.servicio.js"></script>
+    <script src="js/servicios/tipo.servicio.js"></script>
+    <script src="js/servicios/mapa.servicio.js"></script>
+
+    <!-- Controlador -->
+    <script src="js/controladores/rutas.controlador.js"></script>
+
+    <title>Mapa de Rutas Turísticas</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="bi bi-geo-alt-fill"></i>
+                Mapa de Rutas Turísticas
+            </span>
+        </div>
+    </nav>
+    <main class="container-fluid mt-3" ng-controller="RutaControlador">
+        <div class="row">
+            <!-- CIUDADES -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-globe-americas"></i>
+                        Ciudades
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <button class="list-group-item list-group-item-action" ng-repeat="ciudad in ciudades"
+                            ng-click="seleccionarCiudad(ciudad)">
+                            {{ciudad.nombre}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO -->
+            <div class="col-md-9">
+                <div ng-if="!ciudadSeleccionada" class="alert alert-info">
+                    Seleccione una ciudad.
+                </div>
+                <div ng-if="ciudadSeleccionada">
+
+                    <!-- RUTAS -->
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                Rutas en {{ciudadSeleccionada.nombre}}
+                            </h5>
+                            <button class="btn btn-success btn-sm" ng-click="nuevaRuta()">
+                                <i class="bi bi-plus-circle"></i>
+                                Agregar Ruta
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" placeholder="Nombre ruta"
+                                        ng-model="frmRuta.nombre">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <select class="form-select" ng-model="frmRuta.tipo"
+                                        ng-options="tipo as tipo.nombre for tipo in tipos">
+                                        <option value="">Tipo de ruta</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <button class="btn btn-primary" ng-click="guardarRuta()">
+                                        Guardar
+                                    </button>
+                                    <button class="btn btn-secondary" ng-click="frmRuta={}">
+                                        X
+                                    </button>
+                                </div>
+                            </div>
+                            <hr>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre Ruta</th>
+                                        <th>Tipo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="ruta in rutas">
+                                        <td>{{ruta.id}}</td>
+                                        <td>{{ruta.nombre}}</td>
+                                        <td>{{ruta.tipo.nombre}}</td>
+                                        <td>
+                                            <button class="btn btn-info btn-sm" ng-click="seleccionarRuta(ruta)">
+                                                Seleccionar
+                                            </button>
+
+                                            <button class="btn btn-warning btn-sm" ng-click="editarRuta(ruta)">
+                                                Editar
+                                            </button>
+
+                                            <button class="btn btn-danger btn-sm" ng-click="eliminarRuta(ruta.id)">
+                                                Eliminar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- PARADAS -->
+                    <div class="card mb-3" ng-if="rutaSeleccionada">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                Paradas de la ruta: {{rutaSeleccionada.nombre}}
+                            </h5>
+                            <button class="btn btn-success btn-sm" ng-click="nuevaParada()">
+                                <i class="bi bi-plus-circle"></i>
+                                Agregar Parada
+                            </button>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <input type="number" class="form-control" placeholder="Orden"
+                                        ng-model="frmParada.orden">
+                                </div>
+
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control" placeholder="Nombre"
+                                        ng-model="frmParada.nombre">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <input type="number" class="form-control" placeholder="Latitud"
+                                        ng-model="frmParada.latitud">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <input type="number" class="form-control" placeholder="Longitud"
+                                        ng-model="frmParada.longitud">
+                                </div>
+
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control" placeholder="Tiempo"
+                                        ng-model="frmParada.tiempo">
+                                </div>
+                            </div>
+
+                            <textarea class="form-control mb-2" placeholder="Descripción"
+                                ng-model="frmParada.descripcion">
+                            </textarea>
+
+                            <button class="btn btn-primary" ng-click="guardarParada()">
+                                Guardar
+                            </button>
+
+                            <button class="btn btn-secondary" ng-click="frmParada={}">
+                                X
+                            </button>
+                            <hr>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Orden</th>
+                                        <th>Nombre</th>
+                                        <th>Tiempo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr ng-repeat="parada in paradas">
+                                        <td>{{parada.orden}}</td>
+                                        <td>{{parada.nombre}}</td>
+                                        <td>{{parada.tiempo}}</td>
+                                        <td>
+
+                                            <button class="btn btn-warning btn-sm" ng-click="editarParada(parada)">
+                                                Editar
+                                            </button>
+
+                                            <button class="btn btn-danger btn-sm" ng-click="eliminarParada(parada.id)">
+                                                Eliminar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- MAPA -->
+                    <div class="card" ng-if="rutaSeleccionada">
+                        <div class="card-header">
+                            Mapa de la Ruta
+                        </div>
+
+                        <div class="card-body">
+                            <div id="mapa" style="height:400px;width:100%;border:1px solid #ccc;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,8 @@
+/* Fuerza a que los enlaces del sidebar muestren la mano del cursor */
+.sidebar .nav-link {
+    cursor: pointer;
+}
+#mapaRuta{
+    height:500px;
+    width:100%;
+}
