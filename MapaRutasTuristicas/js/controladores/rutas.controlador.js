@@ -110,31 +110,34 @@ app.controller("RutaControlador",
         };
 
         $scope.nuevaRuta = () => {
-
             $scope.frmRuta = {};
-
         };
 
         $scope.guardarParada = () => {
-            $scope.frmParada.ruta =
-                $scope.rutaSeleccionada;
-            if ($scope.frmParada.id) {
-                ParadaServicio.modificar($scope.frmParada)
-                    .then(() => {
-                        $scope.cargarParadasRuta(
-                            $scope.rutaSeleccionada.id
-                        );
-                        $scope.frmParada = {};
-                    });
+
+            let parada = {
+                id: $scope.frmParada.id || 0,
+                orden: Number($scope.frmParada.orden),
+                nombre: $scope.frmParada.nombre,
+                latitud: Number($scope.frmParada.latitud),
+                longitud: Number($scope.frmParada.longitud),
+                tiempo: Number($scope.frmParada.tiempo),
+                descripcion: $scope.frmParada.descripcion,
+                ruta: {
+                    id: $scope.rutaSeleccionada.id
+                }
+            };
+            let promesa;
+            if (parada.id > 0) {
+                promesa = ParadaServicio.modificar(parada);
             } else {
-                ParadaServicio.agregar($scope.frmParada)
-                    .then(() => {
-                        $scope.cargarParadasRuta(
-                            $scope.rutaSeleccionada.id
-                        );
-                        $scope.frmParada = {};
-                    });
+                promesa = ParadaServicio.agregar(parada);
             }
+            promesa.then(() => {
+                $scope.cargarParadasRuta($scope.rutaSeleccionada.id);
+                $scope.frmParada = {};
+            });
+
         };
 
         $scope.editarParada = (parada) => {
